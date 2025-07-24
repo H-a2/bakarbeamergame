@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bakar's High Beam Runner</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.9)), 
+                        url('https://i.imgur.com/K2CWbhV.jpeg') center/cover fixed;
+            color: #ffcc00;
+            min-height: 100vh;
+            overflow-x: hidden;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="32" viewBox="0 0 24 32"><path d="M12 2L2 16L9 17L6 30L12 24L18 30L15 17L22 16Z" fill="%23ffcc00"/></svg>') 12 16, auto;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 10;
+        }
+        
+        /* Game Header */
+        .game-header {
+            text-align: center;
+            padding: 2rem 0;
+            margin-bottom: 1rem;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 204, 0, 0.5);
+            box-shadow: 0 0 30px rgba(255, 204, 0, 0.3);
+        }
+        
+        .game-title {
+            font-size: 4rem;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 15px rgba(255, 204, 0, 0.9), 
+                         0 0 30px rgba(255, 204, 0, 0.7),
+                         0 0 45px rgba(255, 204, 0, 0.5);
+            letter-spacing: 4px;
+            animation: neon-pulse 1.5s infinite alternate;
+            background: linear-gradient(to right, #ffcc00, #ffffff, #ffcc00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .game-subtitle {
+            font-size: 1.5rem;
+            color: #ffcc00;
+            margin-bottom: 1rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        @keyframes neon-pulse {
+            from {
+                text-shadow: 0 0 10px rgba(255, 204, 0, 0.7), 
+                             0 0 20px rgba(255, 204, 0, 0.5),
+                             0 0 30px rgba(255, 204, 0, 0.3);
+            }
+            to {
+                text-shadow: 0 0 15px rgba(255, 204, 0, 0.9), 
+                             0 0 30px rgba(255, 204, 0, 0.7),
+                             0 0 45px rgba(255, 204, 0, 0.5);
+            }
+        }
+        
+        /* Game Container */
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 2rem 0;
+            position: relative;
+        }
+        
+        #gameCanvas {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.8)), 
+                        url('https://i.imgur.com/K2CWbhV.jpeg') center/cover;
+            border-radius: 15px;
+            border: 3px solid #ffcc00;
+            box-shadow: 0 0 30px rgba(255, 204, 0, 0.5);
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        .game-controls {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 2rem;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        .control-btn {
+            background: linear-gradient(to right, #ffcc00, #ff9900);
+            color: #000;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.5);
+            transition: all 0.3s;
+        }
+        
+        .control-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(255, 204, 0, 0.8);
+        }
+        
+        .stats-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 800px;
+            margin-top: 1.5rem;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 1rem;
+            border-radius: 10px;
+            border: 2px solid #ffcc00;
+        }
+        
+        .stat-box {
+            text-align: center;
+        }
+        
+        .stat-label {
+            font-size: 1.2rem;
+            color: #ff9900;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffcc00;
+        }
+        
+        /* Power Control */
+        .power-control {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin: 2rem auto;
+            max-width: 800px;
+            border: 2px solid #ffcc00;
+        }
+        
+        .power-header {
+            text-align: center;
+            font-size: 1.8rem;
+            color: #ffcc00;
+            margin-bottom: 1.5rem;
+        }
+        
+        .slider-container {
+            margin-bottom: 1.5rem;
+        }
+        
+        .slider-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+            color: #ffcc00;
+        }
+        
+        .resistance-slider {
+            width: 100%;
+            height: 25px;
+            -webkit-appearance: none;
+            background: linear-gradient(to right, #ff0000, #ffcc00, #00ff00);
+            border-radius: 15px;
+            outline: none;
+        }
+        
+        .resistance-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #ffcc00;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.8);
+            border: 2px solid white;
+        }
+        
+        /* Instructions */
+        .instructions {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 2px solid #ffcc00;
+        }
+        
+        .instructions h2 {
+            color: #ffcc00;
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+        }
+        
+        .instruction-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        
+        .instruction-card {
+            background: rgba(255, 204, 0, 0.1);
+            border-radius: 10px;
+            padding: 1.5rem;
+            border: 1px solid #ffcc00;
+        }
+        
+        .instruction-card h3 {
+            color: #ff9900;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        /* Footer */
+        .game-footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 15px;
+            border: 2px solid #ffcc00;
+        }
+        
+        .footer-title {
+            font-size: 1.8rem;
+            color: #ffcc00;
+            margin-bottom: 1rem;
+        }
+        
+        .ali-crew {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin: 1.5rem 0;
+        }
+        
+        .ali-member {
+            background: rgba(255, 204, 0, 0.2);
+            border-radius: 10px;
+            padding: 1rem;
+            min-width: 200px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .game-title {
+                font-size: 2.5rem;
+            }
+            
+            .game-subtitle {
+                font-size: 1.2rem;
+            }
+            
+            .control-btn {
+                padding: 0.8rem 1.5rem;
+                font-size: 1rem;
+            }
+            
+            .stat-value {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="game-header">
+            <h1 class="game-title">Bakar's High Beam Runner</h1>
+            <p class="game-subtitle">Harness the power of Bakar's legendary high beams to overcome obstacles and achieve maximum wattage! Avoid the Bund Police and collect voltage boosts!</p>
+        </div>
+        
+        <div class="game-container">
+            <canvas id="gameCanvas" width="800" height="400"></canvas>
+            
+            <div class="stats-container">
+                <div class="stat-box">
+                    <div class="stat-label">Wattage</div>
+                    <div class="stat-value" id="wattage">0W</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Voltage</div>
+                    <div class="stat-value" id="voltage">1000V</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Resistance</div>
+                    <div class="stat-value" id="resistance">50Ω</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Score</div>
+                    <div class="stat-value" id="score">0</div>
+                </div>
+            </div>
+            
+            <div class="game-controls">
+                <button class="control-btn" id="jumpBtn">
+                    <i class="fas fa-arrow-up"></i> JUMP (Space)
+                </button>
+                <button class="control-btn" id="beamBtn">
+                    <i class="fas fa-bolt"></i> HIGH BEAM (B)
+                </button>
+                <button class="control-btn" id="startBtn">
+                    <i class="fas fa-play"></i> START GAME
+                </button>
+            </div>
+        </div>
+        
+        <div class="power-control">
+            <h2 class="power-header">Power Control Panel</h2>
+            <div class="slider-container">
+                <div class="slider-label">
+                    <span>Resistance (Ω)</span>
+                    <span id="currentResistance">50 Ω</span>
+                </div>
+                <input type="range" min="0.1" max="100" value="50" step="0.1" class="resistance-slider" id="resistanceSlider">
+                <div class="slider-label">
+                    <span>0.1 Ω (MAX POWER)</span>
+                    <span>100 Ω (SAFE MODE)</span>
+                </div>
+            </div>
+            <p style="text-align: center; color: #ffcc00; margin-top: 1rem;">
+                Lower resistance = higher wattage = stronger high beams! But watch out for grid overloads!
+            </p>
+        </div>
+        
+        <div class="instructions">
+            <h2>HOW TO PLAY</h2>
+            <div class="instruction-grid">
+                <div class="instruction-card">
+                    <h3><i class="fas fa-running"></i> The Challenge</h3>
+                    <p>Bakar is running through the city powered by his high beams! Your mission is to help him avoid obstacles and collect voltage boosts.</p>
+                </div>
+                <div class="instruction-card">
+                    <h3><i class="fas fa-arrow-up"></i> Jumping</h3>
+                    <p>Press SPACE or the JUMP button to leap over low obstacles. Time your jumps carefully to avoid the Bund Police!</p>
+                </div>
+                <div class="instruction-card">
+                    <h3><i class="fas fa-bolt"></i> High Beams</h3>
+                    <p>Press B or the HIGH BEAM button to unleash Bakar's power. This destroys special obstacles but consumes wattage.</p>
+                </div>
+                <div class="instruction-card">
+                    <h3><i class="fas fa-sliders-h"></i> Power Management</h3>
+                    <p>Adjust the resistance slider to control your power output. Lower resistance = more power but higher risk of overload!</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="game-footer">
+            <h2 class="footer-title">The Ali Prophecy Fulfilled</h2>
+            <p>This game powered by Bakar's legendary high beams - a gift to humanity!</p>
+            
+            <div class="ali-crew">
+                <div class="ali-member">
+                    <h3>Bakar Ali</h3>
+                    <p>High Beam Specialist</p>
+                    <p>Power Source</p>
+                </div>
+                <div class="ali-member">
+                    <h3>Hamza Ali</h3>
+                    <p>Chief Troll Officer</p>
+                    <p>Game Design</p>
+                </div>
+                <div class="ali-member">
+                    <h3>Afnan Ali</h3>
+                    <p>Meme Engineer</p>
+                    <p>Wattage Supervisor</p>
+                </div>
+            </div>
+            
+            <p style="margin-top: 1rem; font-style: italic;">"May your high beams shine bright and your resistance stay low!"</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Game elements
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            const wattageDisplay = document.getElementById('wattage');
+            const voltageDisplay = document.getElementById('voltage');
+            const resistanceDisplay = document.getElementById('resistance');
+            const scoreDisplay = document.getElementById('score');
+            const resistanceSlider = document.getElementById('resistanceSlider');
+            const currentResistance = document.getElementById('currentResistance');
+            const startBtn = document.getElementById('startBtn');
+            const jumpBtn = document.getElementById('jumpBtn');
+            const beamBtn = document.getElementById('beamBtn');
+            
+            // Load images
+            const images = {
+                bakar: new Image(),
+                bakarBlock: new Image(),
+                bundPolice: new Image(),
+                voltageBoost: new Image(),
+                stone: new Image(),
+                background: new Image()
+            };
+            
+            images.bakar.src = 'https://i.imgur.com/L8jRQEP.jpeg';
+            images.bakarBlock.src = 'https://i.imgur.com/0rZGlZ2.jpeg';
+            images.bundPolice.src = 'https://i.imgur.com/MDGwCox.jpeg';
+            images.voltageBoost.src = 'https://i.imgur.com/uyXeRj0.jpeg';
+            images.stone.src = 'https://i.imgur.com/uGbWSkz.jpeg';
+            images.background.src = 'https://i.imgur.com/K2CWbhV.jpeg';
+            
+            // Game variables
+            let gameRunning = false;
+            let score = 0;
+            let voltage = 1000;
+            let resistance = 50;
+            let wattage = 20000;
+            let gameSpeed = 5;
+            let frameCount = 0;
+            let isJumping = false;
+            let isBeaming = false;
+            let beamCooldown = 0;
+            let obstacles = [];
+            let powerUps = [];
+            let backgroundOffset = 0;
+            
+            // Bakar character
+            const bakar = {
+                x: 100,
+                y: canvas.height - 100,
+                width: 60,
+                height: 80,
+                velocityY: 0,
+                gravity: 0.8,
+                jumpPower: -15,
+                grounded: true
+            };
+            
+            // Physics formula
+            function calculateWattage() {
+                return Math.floor((voltage * voltage) / resistance);
+            }
+            
+            // Update displays
+            function updateDisplays() {
+                wattageDisplay.textContent = wattage + 'W';
+                voltageDisplay.textContent = voltage + 'V';
+                resistanceDisplay.textContent = resistance.toFixed(1) + 'Ω';
+                scoreDisplay.textContent = score;
+            }
+            
+            // Draw Bakar
+            function drawBakar() {
+                if (images.bakar.complete) {
+                    ctx.drawImage(images.bakar, bakar.x - 30, bakar.y - 30, 60, 60);
+                    
+                    // Draw high beam effect
+                    if (isBeaming) {
+                        ctx.fillStyle = 'rgba(255, 204, 0, 0.5)';
+                        ctx.beginPath();
+                        ctx.moveTo(bakar.x - 5, bakar.y + 10);
+                        ctx.lineTo(canvas.width, bakar.y - 50);
+                        ctx.lineTo(canvas.width, bakar.y + 50);
+                        ctx.closePath();
+                        ctx.fill();
+                        
+                        // Beam particles
+                        for (let i = 0; i < 20; i++) {
+                            const x = bakar.x - 5 + Math.random() * (canvas.width - bakar.x);
+                            const y = bakar.y + Math.random() * 100 - 50;
+                            const size = Math.random() * 5 + 2;
+                            
+                            ctx.fillStyle = i % 2 === 0 ? '#ffcc00' : '#ffffff';
+                            ctx.beginPath();
+                            ctx.arc(x, y, size, 0, Math.PI * 2);
+                            ctx.fill();
+                        }
+                    }
+                } else {
+                    // Fallback if image not loaded
+                    ctx.fillStyle = '#ffcc00';
+                    ctx.beginPath();
+                    ctx.arc(bakar.x, bakar.y - 20, 15, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+            
+            // Draw obstacles
+            function drawObstacles() {
+                obstacles.forEach(obstacle => {
+                    if (obstacle.type === 'stone' && images.stone.complete) {
+                        ctx.drawImage(images.stone, obstacle.x, obstacle.y, 40, 40);
+                    } else if (obstacle.type === 'barrier' && images.bundPolice.complete) {
+                        ctx.drawImage(images.bundPolice, obstacle.x, obstacle.y, 60, 80);
+                    } else if (obstacle.type === 'bakar' && images.bakarBlock.complete) {
+                        ctx.drawImage(images.bakarBlock, obstacle.x, obstacle.y, 60, 60);
+                    } else {
+                        // Fallback if images not loaded
+                        if (obstacle.type === 'stone') {
+                            ctx.fillStyle = '#888';
+                            ctx.beginPath();
+                            ctx.arc(obstacle.x, obstacle.y, obstacle.radius, 0, Math.PI * 2);
+                            ctx.fill();
+                        } else if (obstacle.type === 'barrier') {
+                            ctx.fillStyle = '#cc0000';
+                            ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+                        } else if (obstacle.type === 'bakar') {
+                            ctx.fillStyle = '#00ffff';
+                            ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+                        }
+                    }
+                });
+            }
+            
+            // Draw power-ups
+            function drawPowerUps() {
+                powerUps.forEach(powerUp => {
+                    if (images.voltageBoost.complete) {
+                        ctx.drawImage(images.voltageBoost, powerUp.x - 15, powerUp.y - 15, 30, 30);
+                    } else {
+                        ctx.fillStyle = '#ffcc00';
+                        ctx.beginPath();
+                        ctx.arc(powerUp.x, powerUp.y, powerUp.radius, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                });
+            }
+            
+            // Draw ground
+            function drawGround() {
+                // Draw road
+                ctx.fillStyle = '#333';
+                ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
+                
+                // Road lines
+                ctx.fillStyle = '#ffcc00';
+                for (let i = 0; i < canvas.width; i += 40) {
+                    ctx.fillRect(i, canvas.height - 15, 20, 3);
+                }
+                
+                // Add texture to the road
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                for (let i = 0; i < canvas.width; i += 5) {
+                    ctx.fillRect(i, canvas.height - 20, 2, 20);
+                }
+            }
+            
+            // Draw HUD
+            function drawHUD() {
+                // Power bar background
+                ctx.fillStyle = '#333';
+                ctx.fillRect(20, 20, 200, 20);
+                
+                // Power bar
+                const powerWidth = (wattage / 50000) * 200;
+                ctx.fillStyle = wattage > 40000 ? '#ff0000' : '#ffcc00';
+                ctx.fillRect(20, 20, Math.min(powerWidth, 200), 20);
+                
+                // Power text
+                ctx.fillStyle = '#fff';
+                ctx.font = '14px Arial';
+                ctx.fillText('HIGH BEAM POWER: ' + wattage + 'W', 25, 35);
+                
+                // Score
+                ctx.fillStyle = '#ffcc00';
+                ctx.font = 'bold 20px Arial';
+                ctx.fillText('SCORE: ' + score, canvas.width - 150, 35);
+            }
+            
+            // Draw background
+            function drawBackground() {
+                if (images.background.complete) {
+                    // Draw scrolling background
+                    ctx.drawImage(images.background, backgroundOffset, 0, canvas.width, canvas.height);
+                    ctx.drawImage(images.background, backgroundOffset + canvas.width, 0, canvas.width, canvas.height);
+                } else {
+                    // Fallback if image not loaded
+                    ctx.fillStyle = 'rgba(10, 10, 30, 0.7)';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                }
+                
+                // Draw semi-transparent overlay
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+            
+            // Generate obstacles
+            function generateObstacle() {
+                const obstacleTypes = ['stone', 'barrier', 'bakar'];
+                const type = obstacleTypes[Math.floor(Math.random() * obstacleTypes.length)];
+                
+                if (type === 'stone') {
+                    obstacles.push({
+                        type: 'stone',
+                        x: canvas.width,
+                        y: canvas.height - 40,
+                        radius: 20,
+                        speed: gameSpeed
+                    });
+                } else if (type === 'barrier') {
+                    obstacles.push({
+                        type: 'barrier',
+                        x: canvas.width,
+                        y: canvas.height - 100,
+                        width: 60,
+                        height: 80,
+                        speed: gameSpeed
+                    });
+                } else if (type === 'bakar') {
+                    obstacles.push({
+                        type: 'bakar',
+                        x: canvas.width,
+                        y: canvas.height - 120,
+                        width: 60,
+                        height: 60,
+                        speed: gameSpeed
+                    });
+                }
+            }
+            
+            // Generate power-ups
+            function generatePowerUp() {
+                if (Math.random() < 0.02) {
+                    powerUps.push({
+                        x: canvas.width,
+                        y: canvas.height - 100,
+                        radius: 15,
+                        speed: gameSpeed
+                    });
+                }
+            }
+            
+            // Update game state
+            function updateGame() {
+                // Update background offset for parallax effect
+                backgroundOffset -= gameSpeed / 3;
+                if (backgroundOffset <= -canvas.width) {
+                    backgroundOffset = 0;
+                }
+                
+                // Update Bakar position
+                bakar.y += bakar.velocityY;
+                bakar.velocityY += bakar.gravity;
+                
+                // Ground collision
+                if (bakar.y > canvas.height - 20 - bakar.height) {
+                    bakar.y = canvas.height - 20 - bakar.height;
+                    bakar.velocityY = 0;
+                    bakar.grounded = true;
+                }
+                
+                // Update obstacles
+                obstacles.forEach((obstacle, index) => {
+                    obstacle.x -= obstacle.speed;
+                    
+                    // Collision detection
+                    let collision = false;
+                    
+                    if (obstacle.type === 'stone') {
+                        const dx = obstacle.x - bakar.x;
+                        const dy = obstacle.y - bakar.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < obstacle.radius + 20) {
+                            collision = true;
+                        }
+                    } else if (obstacle.type === 'barrier') {
+                        if (bakar.x < obstacle.x + obstacle.width &&
+                            bakar.x + bakar.width > obstacle.x &&
+                            bakar.y < obstacle.y + obstacle.height &&
+                            bakar.y + bakar.height > obstacle.y) {
+                            collision = true;
+                        }
+                    } else if (obstacle.type === 'bakar') {
+                        if (bakar.x < obstacle.x + obstacle.width &&
+                            bakar.x + bakar.width > obstacle.x &&
+                            bakar.y < obstacle.y + obstacle.height &&
+                            bakar.y + bakar.height > obstacle.y) {
+                            if (isBeaming && wattage > 10000) {
+                                // Destroy with high beam
+                                obstacles.splice(index, 1);
+                                wattage -= 10000;
+                                score += 50;
+                                return;
+                            } else {
+                                collision = true;
+                            }
+                        }
+                    }
+                    
+                    // Remove off-screen obstacles
+                    if (obstacle.x + 50 < 0) {
+                        obstacles.splice(index, 1);
+                        score += 10;
+                    }
+                    
+                    // Handle collision
+                    if (collision) {
+                        if (wattage > 30000) {
+                            // Overload explosion
+                            wattage = 0;
+                            obstacles.splice(index, 1);
+                            score += 20;
+                        } else {
+                            endGame();
+                        }
+                    }
+                });
+                
+                // Update power-ups
+                powerUps.forEach((powerUp, index) => {
+                    powerUp.x -= powerUp.speed;
+                    
+                    // Collision detection
+                    const dx = powerUp.x - bakar.x;
+                    const dy = powerUp.y - bakar.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (distance < powerUp.radius + 30) {
+                        // Collect power-up
+                        voltage += 500;
+                        wattage = calculateWattage();
+                        powerUps.splice(index, 1);
+                        score += 25;
+                    }
+                    
+                    // Remove off-screen power-ups
+                    if (powerUp.x + powerUp.radius < 0) {
+                        powerUps.splice(index, 1);
+                    }
+                });
+                
+                // Update cooldowns
+                if (beamCooldown > 0) {
+                    beamCooldown--;
+                }
+                
+                // Gradually increase game speed
+                if (frameCount % 500 === 0) {
+                    gameSpeed += 0.5;
+                }
+                
+                // Update displays
+                updateDisplays();
+                frameCount++;
+            }
+            
+            // Draw everything
+            function draw() {
+                // Clear canvas
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // Draw game elements
+                drawBackground();
+                drawGround();
+                drawObstacles();
+                drawPowerUps();
+                drawBakar();
+                drawHUD();
+            }
+            
+            // Game loop
+            function gameLoop() {
+                if (gameRunning) {
+                    updateGame();
+                    draw();
+                    
+                    // Generate obstacles
+                    if (Math.random() < 0.03) {
+                        generateObstacle();
+                    }
+                    
+                    // Generate power-ups
+                    generatePowerUp();
+                    
+                    requestAnimationFrame(gameLoop);
+                }
+            }
+            
+            // Start game
+            function startGame() {
+                gameRunning = true;
+                score = 0;
+                voltage = 1000;
+                resistance = 50;
+                wattage = calculateWattage();
+                gameSpeed = 5;
+                frameCount = 0;
+                obstacles = [];
+                powerUps = [];
+                isJumping = false;
+                isBeaming = false;
+                beamCooldown = 0;
+                backgroundOffset = 0;
+                
+                bakar.y = canvas.height - 100;
+                bakar.velocityY = 0;
+                bakar.grounded = true;
+                
+                updateDisplays();
+                startBtn.innerHTML = '<i class="fas fa-redo"></i> RESTART GAME';
+                gameLoop();
+            }
+            
+            // End game
+            function endGame() {
+                gameRunning = false;
+                
+                // Display game over
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.fillRect(canvas.width/2 - 150, canvas.height/2 - 50, 300, 100);
+                
+                ctx.fillStyle = '#ff0000';
+                ctx.font = 'bold 30px Arial';
+                ctx.fillText('GAME OVER!', canvas.width/2 - 80, canvas.height/2 - 10);
+                
+                ctx.fillStyle = '#ffcc00';
+                ctx.font = '20px Arial';
+                ctx.fillText('Final Score: ' + score, canvas.width/2 - 70, canvas.height/2 + 30);
+            }
+            
+            // Event listeners
+            startBtn.addEventListener('click', startGame);
+            
+            jumpBtn.addEventListener('click', function() {
+                if (gameRunning && bakar.grounded) {
+                    bakar.velocityY = bakar.jumpPower;
+                    bakar.grounded = false;
+                }
+            });
+            
+            beamBtn.addEventListener('click', function() {
+                if (gameRunning && beamCooldown === 0 && wattage > 5000) {
+                    isBeaming = true;
+                    beamCooldown = 30;
+                    wattage -= 5000;
+                    
+                    setTimeout(() => {
+                        isBeaming = false;
+                    }, 300);
+                }
+            });
+            
+            // Keyboard controls
+            document.addEventListener('keydown', function(e) {
+                if (e.code === 'Space' && gameRunning && bakar.grounded) {
+                    bakar.velocityY = bakar.jumpPower;
+                    bakar.grounded = false;
+                }
+                
+                if (e.key.toLowerCase() === 'b' && gameRunning && beamCooldown === 0 && wattage > 5000) {
+                    isBeaming = true;
+                    beamCooldown = 30;
+                    wattage -= 5000;
+                    
+                    setTimeout(() => {
+                        isBeaming = false;
+                    }, 300);
+                }
+            });
+            
+            // Resistance slider
+            resistanceSlider.addEventListener('input', function() {
+                resistance = parseFloat(this.value);
+                currentResistance.textContent = resistance.toFixed(1) + ' Ω';
+                wattage = calculateWattage();
+                updateDisplays();
+            });
+            
+            // Initialize displays
+            updateDisplays();
+        });
+    </script>
+</body>
+</html>
